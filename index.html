@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cofrinho – controle de gastos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2d2347;--mut:#76698f;--bg:#fdf4f2;--paper:#fff;--lilac:#e4d9ff;--peach:#ffd9c2;--mint:#c6f0dc;--butter:#fff0b8;--pink:#ffc2d3;--rose:#e8456c;--green:#1f8f63;--line:#efe1e6}
+*{box-sizing:border-box;margin:0}
+body{font:500 16px/1.5 Nunito,ui-rounded,system-ui,sans-serif;color:var(--ink);background:var(--bg) radial-gradient(#f2d9e1 1.5px,transparent 1.7px) 0 0/26px 26px;min-height:100vh}
+h1,h2,h3,.big{font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;line-height:1.1}
+main{max-width:1060px;margin:0 auto;padding:22px 16px 90px;display:grid;gap:26px}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid #7a5cff;outline-offset:2px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.top h1{font-size:2rem;font-weight:800}
+.chip{font-size:.85rem;background:var(--paper);border:2px solid var(--ink);border-radius:999px;padding:2px 12px}
+.card{background:var(--paper);border:2px solid var(--ink);border-radius:26px;padding:20px;box-shadow:0 5px 0 var(--ink)}
+.hero{background:var(--lilac);border-radius:36px 36px 26px 36px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;position:relative}
+.mes{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.mes h2{font-size:1.25rem;min-width:9.5ch;text-transform:capitalize}
+.nav{width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);background:var(--paper);font-weight:800;transition:transform .15s}
+.nav:active{transform:scale(.85)}
+.big{font-size:clamp(2.4rem,8vw,3.8rem);font-weight:800}
+.pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.pill{background:var(--paper);border:2px solid var(--ink);border-radius:18px 18px 18px 6px;padding:6px 14px;min-width:130px}
+.pill small{display:block;color:var(--mut);font-size:.8rem}
+.pill b{font-family:"Baloo 2",sans-serif;font-size:1.15rem}
+.pig{width:clamp(96px,20vw,170px);animation:bob 3s ease-in-out infinite;transform-origin:50% 90%}
+.pig.hop{animation:hop .65s cubic-bezier(.3,1.6,.5,1)}
+.eyes{transform-origin:60px 54px;animation:blink 4.5s infinite}
+@keyframes bob{50%{transform:translateY(-6px) rotate(-2deg)}}
+@keyframes hop{0%{transform:scale(1)}30%{transform:translateY(-26px) scaleY(1.1)}60%{transform:translateY(0) scaleY(.85)}100%{transform:scale(1)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.acoes{display:flex;gap:12px;flex-wrap:wrap}
+.btn{border:2px solid var(--ink);border-radius:999px;padding:10px 22px;font-weight:700;background:var(--paper);box-shadow:0 4px 0 var(--ink);transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--ink)}
+.btn:active{transform:translateY(4px) scale(.98);box-shadow:0 0 0 var(--ink)}
+.btn.mint{background:var(--mint)}.btn.pink{background:var(--pink)}.btn.butter{background:var(--butter)}
+.btn.sm{padding:5px 14px;font-size:.9rem;box-shadow:0 3px 0 var(--ink)}
+.grid{display:grid;grid-template-columns:1.6fr 1fr;gap:26px;align-items:start}
+h2.t{font-size:1.4rem;margin-bottom:12px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal b{text-align:center;font-size:.8rem;color:var(--mut)}
+.day{min-height:74px;border:1.5px solid var(--line);border-radius:14px;background:#fffdfd;padding:4px;text-align:left;display:flex;flex-direction:column;gap:2px;overflow:hidden;transition:transform .15s,background .15s}
+.day:hover{background:var(--butter);transform:scale(1.05)}
+.day:active{transform:scale(.94)}
+.day span{font-weight:700;font-size:.85rem}
+.day.hoje span{background:var(--ink);color:#fff;border-radius:999px;width:24px;height:24px;display:grid;place-items:center}
+.day.sel{border-color:var(--ink);background:var(--lilac)}
+.day em,.day u{font-style:normal;text-decoration:none;font-size:.7rem;font-weight:700;border-radius:8px;padding:0 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.in{background:var(--mint);color:#14573d}.out{background:var(--pink);color:#9b1c3d}.pend{background:var(--butter);border:1px dashed var(--ink)}
+.day u{background:var(--lilac)}.day u.v{background:var(--ink);color:#fff}
+.fat{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-top:2px dashed var(--line)}
+.fat:first-of-type{border-top:0}
+.fat small,.sub,.row small{display:block;color:var(--mut);font-size:.85rem}
+.fat .v{text-align:right;font-family:"Baloo 2",sans-serif;font-size:1.2rem}
+.note{font-size:.85rem;color:var(--mut);margin-top:6px}
+.sals{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.sal{border:2px solid var(--ink);border-radius:30px 30px 30px 8px;padding:20px;box-shadow:0 5px 0 var(--ink);display:grid;gap:8px;align-content:start}
+.sal.m{background:var(--mint)}.sal.j{background:var(--peach);border-radius:30px 30px 8px 30px}
+.sal h3{font-size:1.5rem}.sal .sub{color:#5b5078}
+.calc{font-size:.95rem}
+.campos{display:flex;gap:10px;flex-wrap:wrap}
+label{display:grid;gap:4px;font-weight:700;font-size:.9rem}
+input,select{font:inherit;border:2px solid var(--line);border-radius:14px;padding:8px 12px;background:#fff;color:var(--ink);width:100%}
+input:focus,select:focus{border-color:var(--ink);outline:none}
+.mi{display:flex;align-items:center;gap:6px}.mi b{font-weight:700}
+.ck{display:flex;align-items:center;gap:8px}.ck input{width:20px;height:20px;accent-color:var(--ink)}
+.row{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:12px 0;border-top:2px dashed var(--line)}
+.row:first-of-type{border-top:0}
+.dot{width:38px;height:38px;border-radius:50% 50% 50% 12px;display:grid;place-items:center;font-weight:800;border:2px solid var(--ink)}
+.dot.p{background:var(--mint)}.dot.n{background:var(--pink)}
+.val{font-family:"Baloo 2",sans-serif;font-size:1.15rem;text-align:right}
+.val.p{color:var(--green)}.val.n{color:var(--rose)}
+.x{width:30px;height:30px;border-radius:50%;border:0;background:transparent;font-size:1.3rem;color:var(--mut)}
+.x:hover{background:var(--pink);color:var(--ink)}
+.vazio{padding:20px 0;color:var(--mut)}
+.cab{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+dialog{border:2px solid var(--ink);border-radius:28px;padding:24px;width:min(440px,92vw);box-shadow:0 6px 0 var(--ink);margin:auto;color:var(--ink)}
+dialog[open]{animation:spring .45s cubic-bezier(.34,1.56,.64,1)}
+dialog::backdrop{background:rgba(45,35,71,.4)}
+@keyframes spring{from{transform:scale(.8) translateY(24px);opacity:0}}
+form{display:grid;gap:14px}
+form h2{font-size:1.6rem}
+.prev{background:var(--butter);border-radius:14px;padding:8px 12px;font-size:.92rem}
+.fim{display:flex;gap:10px;justify-content:flex-end;margin-top:4px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,140px);background:var(--ink);color:#fff;border-radius:999px;padding:10px 22px;font-weight:700;z-index:9}
+.toast.on{animation:toast 2.4s forwards}
+@keyframes toast{0%{transform:translate(-50%,140px)}12%{transform:translate(-50%,-10px)}20%,85%{transform:translate(-50%,0)}100%{transform:translate(-50%,140px)}}
+[hidden]{display:none!important}
+body.travado main{display:none}
+.login{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:var(--bg) radial-gradient(#f2d9e1 1.5px,transparent 1.7px) 0 0/26px 26px;overflow:auto}
+.lcard{width:min(400px,100%);text-align:center;display:grid;gap:14px;justify-items:center}
+.lcard h1{font-size:2.6rem;font-weight:800}
+.lstep{display:grid;gap:14px;justify-items:center;width:100%}
+.quem{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.q{width:152px;border:2px solid var(--ink);border-radius:30px 30px 30px 8px;padding:16px 10px 12px;box-shadow:0 5px 0 var(--ink);display:grid;justify-items:center;gap:6px;font-family:"Baloo 2",sans-serif;font-size:1.35rem;font-weight:800;transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.q:nth-child(2){border-radius:30px 30px 8px 30px}
+.q:hover{transform:translateY(-6px) rotate(-2deg)}.q:active{transform:scale(.94)}
+.q svg{width:88px;height:88px;animation:bob 3s ease-in-out infinite}
+.q:nth-child(2) svg{animation-delay:-1.5s}
+#av svg{width:100px;height:100px;animation:pulo .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pulo{from{transform:scale(.3) translateY(30px)}}
+.dots{display:flex;gap:14px;justify-content:center;height:24px;align-items:center}
+.dots i{width:20px;height:20px;border-radius:50%;border:2px solid var(--ink);background:#fff;transition:transform .25s cubic-bezier(.34,1.56,.64,1),background .2s}
+.dots i.on{background:var(--rose);transform:scale(1.25)}
+.dots.tremer{animation:tremer .45s}
+@keyframes tremer{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+.pad{display:grid;grid-template-columns:repeat(3,76px);gap:12px;justify-content:center}
+.k{height:62px;border-radius:22px;padding:0;font-family:"Baloo 2",sans-serif;font-size:1.6rem}
+.k:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:0 4px 0 var(--ink)}
+#lmsg{min-height:1.5em;font-size:.95rem;color:var(--mut)}#lmsg.erro{color:var(--rose);font-weight:700}
+@media(max-width:860px){.grid,.sals{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.pig{position:absolute;right:14px;top:10px;width:84px}}
+@media(max-width:520px){.day{min-height:58px;padding:3px}.day em,.day u{font-size:.6rem;padding:0 3px}.cal{gap:4px}.row{grid-template-columns:auto 1fr auto}.row .x{grid-column:3;grid-row:2}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <h1>Cofrinho</h1>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="chip" id="status">Carregando…</span><button class="btn sm" id="sair" data-sair hidden>Sair</button></div>
+  </header>
+
+  <section class="card hero" aria-label="Resumo do mês">
+    <div>
+      <div class="mes">
+        <button class="nav" data-nav="-1" aria-label="Mês anterior">‹</button>
+        <h2 id="mes"></h2>
+        <button class="nav" data-nav="1" aria-label="Próximo mês">›</button>
+      </div>
+      <div class="big" id="saldo">R$ 0,00</div>
+      <small>Saldo do mês, com os salários que ainda vão cair</small>
+      <div class="pills">
+        <div class="pill"><small>Entradas</small><b id="ent">R$ 0,00</b></div>
+        <div class="pill"><small>Gastos</small><b id="gas">R$ 0,00</b></div>
+        <div class="pill"><small>Vendas a receber</small><b id="rec">R$ 0,00</b><small id="recSub"></small></div>
+      </div>
+    </div>
+    <svg class="pig" id="pig" viewBox="0 0 120 100" aria-hidden="true">
+      <path d="M32 34 28 14 48 26ZM88 34 92 14 72 26Z" fill="#ff9db7" stroke="#2d2347" stroke-width="3" stroke-linejoin="round"/>
+      <rect x="38" y="84" width="14" height="12" rx="6" fill="#ff9db7" stroke="#2d2347" stroke-width="3"/>
+      <rect x="68" y="84" width="14" height="12" rx="6" fill="#ff9db7" stroke="#2d2347" stroke-width="3"/>
+      <ellipse cx="60" cy="58" rx="44" ry="34" fill="#ff9db7" stroke="#2d2347" stroke-width="3"/>
+      <rect x="46" y="23" width="28" height="6" rx="3" fill="#2d2347"/>
+      <ellipse cx="60" cy="70" rx="16" ry="11" fill="#ffc2d3" stroke="#2d2347" stroke-width="3"/>
+      <circle cx="54" cy="70" r="2.5" fill="#2d2347"/><circle cx="66" cy="70" r="2.5" fill="#2d2347"/>
+      <ellipse cx="30" cy="64" rx="6" ry="4" fill="#e8456c" opacity=".35"/><ellipse cx="90" cy="64" rx="6" ry="4" fill="#e8456c" opacity=".35"/>
+      <g class="eyes" fill="#2d2347"><circle cx="42" cy="54" r="4"/><circle cx="78" cy="54" r="4"/></g>
+    </svg>
+  </section>
+
+  <section class="acoes" aria-label="Novo lançamento">
+    <button class="btn mint" data-abrir="venda">+ Registrar venda</button>
+    <button class="btn pink" data-abrir="gasto">+ Registrar gasto</button>
+    <button class="btn butter" data-abrir="entrada">+ Entrada avulsa</button>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h2 class="t">Calendário</h2>
+      <div class="cal" id="cal"></div>
+      <p class="note">Toda sexta entra o salário semanal da Mariana. A fatura fecha no dia 3 e vence no dia 10.</p>
+    </div>
+    <div class="card">
+      <h2 class="t">Fatura do cartão</h2>
+      <div id="fat"></div>
+      <p class="note">Entram na fatura os gastos marcados como “cartão”. Compras até o dia 3 vencem no dia 10 do mesmo mês; depois do dia 3, no mês seguinte.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="t">Salários e bonificações</h2>
+    <div class="sals" id="sal"></div>
+  </section>
+
+  <section class="card">
+    <div class="cab"><h2 class="t" id="listaTit"></h2><button class="btn sm" id="todo" data-all hidden>Ver o mês todo</button></div>
+    <div id="lista"></div>
+  </section>
+</main>
+
+<section class="login" id="login" hidden aria-label="Entrar no Cofrinho">
+  <div class="lcard">
+    <h1>Cofrinho</h1>
+    <div id="u1" class="lstep"><p>Quem vai entrar hoje?</p><div class="quem" id="quem"></div></div>
+    <div id="u2" class="lstep" hidden>
+      <button class="btn sm" data-trocar>‹ Trocar de pessoa</button>
+      <div id="av"></div><h2 id="oi"></h2><p>Digite seu PIN de 4 números</p>
+      <div class="dots" id="dots" role="img" aria-label="PIN digitado"></div>
+      <div class="pad" id="pad"></div>
+    </div>
+    <p id="lmsg" role="status" aria-live="polite"></p>
+  </div>
+</section>
+<dialog id="dlg"><form id="f"></form></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script type="module">
+/* ============ FIREBASE ============
+   Para sincronizar na nuvem, cole aqui a config do seu app web do Firebase.
+   Enquanto "apiKey" começar com "COLE", tudo é salvo só neste navegador. */
+const FB = {
+  apiKey: "AIzaSyBmt-pQ5Q02i88-UL3LgfaO4Z6BppbvLHY",
+  authDomain: "cofrinho-faeb7.firebaseapp.com",
+  projectId: "cofrinho-faeb7",
+  storageBucket: "cofrinho-faeb7.firebasestorage.app",
+  messagingSenderId: "901780983323",
+  appId: "1:901780983323:web:489c190cda82c543d7b2be"
+};
+const SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const R = v => Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const fmt = v => v.toLocaleString("pt-BR",{maximumFractionDigits:v%1?2:0});
+const pad = n => String(n).padStart(2,"0");
+const iso = (y,m,d) => `${y}-${pad(m+1)}-${pad(d)}`;
+const br = d => `${d.slice(8)}/${d.slice(5,7)}`;
+const sum = a => a.reduce((x,y)=>x+y,0);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const hoje = new Date();
+const HOJE = iso(hoje.getFullYear(),hoje.getMonth(),hoje.getDate());
+const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const CATS = ["Casa","Mercado","Transporte","Lazer","Saúde","Outros"];
+
+let view = {y:hoje.getFullYear(), m:hoje.getMonth()}, sel = null;
+let items = [], cfg = {mariana:450, joao:0, diaJoao:5}, db = null;
+
+/* ============ DADOS ============ */
+const LS = "cofrinho:v1";
+function loadLocal(){ try{ const s=JSON.parse(localStorage.getItem(LS)||"{}"); items=s.items||[]; cfg={...cfg,...s.cfg}; }catch(e){} }
+function saveLocal(){ try{ localStorage.setItem(LS,JSON.stringify({items,cfg})); }catch(e){} }
+function put(it){ if(db) db.put(it); else { items=items.filter(i=>i.id!==it.id).concat(it); saveLocal(); } render(); }
+function del(id){ if(db) db.del(id); else { items=items.filter(i=>i.id!==id); saveLocal(); } render(); }
+function setCfg(p){ cfg={...cfg,...p}; if(db) db.cfg(cfg); else saveLocal(); render(); }
+
+let A=null, off=[], idle=0;
+async function boot(){
+  if(!(FB.apiKey && !FB.apiKey.startsWith("COLE"))){
+    if(location.hash==="#login") mostrarLogin();
+    else { $("#status").textContent="Modo local, sem login"; loadLocal(); render(); }
+    return;
+  }
+  mostrarLogin();
+  try{
+    const [ap,au,fs]=await Promise.all([import(SDK+"firebase-app.js"),import(SDK+"firebase-auth.js"),import(SDK+"firebase-firestore.js")]);
+    const app=ap.initializeApp(FB), auth=au.getAuth(app), fdb=fs.getFirestore(app);
+    await au.setPersistence(auth,au.browserSessionPersistence);
+    A={auth,signIn:au.signInWithEmailAndPassword,out:()=>au.signOut(auth)};
+    db={
+      put:it=>fs.setDoc(fs.doc(fdb,"lancamentos",it.id),it),
+      del:id=>fs.deleteDoc(fs.doc(fdb,"lancamentos",id)),
+      cfg:c=>fs.setDoc(fs.doc(fdb,"config","ajustes"),c)
+    };
+    au.onAuthStateChanged(auth,u=>{
+      off.forEach(f=>f()); off=[];
+      if(u){
+        const nome=(Object.values(USERS).find(x=>x.email===u.email)||{}).nome||"";
+        off=[fs.onSnapshot(fs.collection(fdb,"lancamentos"),sn=>{items=sn.docs.map(d=>d.data());render();},()=>{$("#status").textContent="Sem permissão para ler os dados";}),
+             fs.onSnapshot(fs.doc(fdb,"config","ajustes"),d=>{if(d.exists()){cfg={...cfg,...d.data()};render();}})];
+        $("#status").textContent=`Sincronizado, ${nome}`; $("#sair").hidden=false; mostrarApp(); reset();
+      } else { items=[]; $("#sair").hidden=true; $("#status").textContent="Bloqueado"; clearTimeout(idle); render(); mostrarLogin(); }
+    });
+  }catch(err){ console.error(err); msg("Não foi possível conectar ao Firebase. Confira a configuração.",1); }
+}
+
+/* ============ CÁLCULOS ============ */
+function occ(it){
+  const n=it.parcelas>1?it.parcelas:1; if(n===1) return [it];
+  const y0=+it.data.slice(0,4), m0=+it.data.slice(5,7)-1, d0=+it.data.slice(8);
+  return Array.from({length:n},(_,i)=>{ const t=new Date(y0,m0+i,1), dim=new Date(t.getFullYear(),t.getMonth()+1,0).getDate();
+    return {...it,data:iso(t.getFullYear(),t.getMonth(),Math.min(d0,dim)),n:i+1,total:n}; });
+}
+function eventos(y,m){
+  const dim = new Date(y,m+1,0).getDate(), pre = `${y}-${pad(m+1)}`;
+  const ev = items.flatMap(occ).filter(i=>i.data.startsWith(pre));
+  if(cfg.mariana>0) for(let d=1;d<=dim;d++) if(new Date(y,m,d).getDay()===5)
+    ev.push({id:"auto-m"+d,auto:1,tipo:"salario",pessoa:"Mariana",titulo:"Salário semanal",valor:+cfg.mariana,data:iso(y,m,d)});
+  if(cfg.joao>0)
+    ev.push({id:"auto-j",auto:1,tipo:"salario",pessoa:"João",titulo:"Salário mensal",valor:+cfg.joao,data:iso(y,m,Math.min(+cfg.diaJoao||5,dim))});
+  return ev;
+}
+const ganho = e => e.tipo==="gasto" ? 0 : e.tipo==="venda" ? (e.recebida ? e.valor-e.custo : 0) : e.valor;
+
+function faturas(){
+  const out=[]; let y=hoje.getFullYear(), m=hoje.getMonth();
+  for(let i=0;i<4&&out.length<2;i++){
+    const due=iso(y,m,10);
+    if(due>=HOJE){
+      const p=new Date(y,m-1,3), ini=iso(p.getFullYear(),p.getMonth(),3), fim=iso(y,m,3);
+      const total=sum(items.flatMap(occ).filter(g=>g.tipo==="gasto"&&g.cartao&&g.data>ini&&g.data<=fim).map(g=>g.valor));
+      const dias=Math.round((new Date(y,m,10)-new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()))/864e5);
+      out.push({due,fim,total,dias});
+    }
+    m++; if(m>11){m=0;y++;}
+  }
+  return out;
+}
+
+/* ============ TELA ============ */
+function num(el,v){
+  const a=el._v||0; el._v=v;
+  if(a===v||matchMedia("(prefers-reduced-motion:reduce)").matches){ el.textContent=R(v); return; }
+  const t0=performance.now();
+  (function f(t){ const k=Math.min(1,(t-t0)/600), e=1-Math.pow(1-k,3); el.textContent=R(a+(v-a)*e); if(k<1) requestAnimationFrame(f); })(t0);
+}
+function render(){
+  const {y,m}=view, ev=eventos(y,m);
+  const ent=sum(ev.map(ganho)), gas=sum(ev.filter(e=>e.tipo==="gasto").map(e=>e.valor));
+  const pend=ev.filter(e=>e.tipo==="venda"&&!e.recebida);
+  $("#mes").textContent=`${MESES[m]} de ${y}`;
+  num($("#saldo"),ent-gas); num($("#ent"),ent); num($("#gas"),gas); num($("#rec"),sum(pend.map(e=>e.valor)));
+  $("#recSub").textContent=pend.length?`lucro previsto ${R(sum(pend.map(e=>e.valor-e.custo)))}`:"";
+
+  const dim=new Date(y,m+1,0).getDate(), off=new Date(y,m,1).getDay();
+  let h=["dom","seg","ter","qua","qui","sex","sáb"].map(d=>`<b>${d}</b>`).join("")+"<i></i>".repeat(off);
+  for(let d=1;d<=dim;d++){
+    const k=iso(y,m,d), es=ev.filter(e=>e.data===k);
+    const g=sum(es.map(ganho)), s=sum(es.filter(e=>e.tipo==="gasto").map(e=>e.valor));
+    h+=`<button class="day${k===HOJE?" hoje":""}${k===sel?" sel":""}" data-k="${k}" aria-label="Dia ${d}"><span>${d}</span>`
+      +(g?`<em class="in">+${fmt(g)}</em>`:"")+(s?`<em class="out">−${fmt(s)}</em>`:"")
+      +(es.some(e=>e.tipo==="venda"&&!e.recebida)?`<em class="pend">venda</em>`:"")
+      +(d===3?`<u>fecha</u>`:"")+(d===10?`<u class="v">vence</u>`:"")+`</button>`;
+  }
+  $("#cal").innerHTML=h;
+
+  $("#fat").innerHTML=faturas().map(f=>`<div class="fat"><div><strong>Vence ${br(f.due)}</strong><small>${f.fim<=HOJE?"Fechada em "+br(f.fim):"Aberta, fecha em "+br(f.fim)}</small></div><div class="v">${R(f.total)}<small>${f.dias===0?"vence hoje":f.dias===1?"vence amanhã":"faltam "+f.dias+" dias"}</small></div></div>`).join("");
+
+  const ant=new Date(y,m-1,1), nomeAnt=MESES[ant.getMonth()];
+  const gAnt=sum(eventos(ant.getFullYear(),ant.getMonth()).filter(e=>e.tipo==="gasto").map(e=>e.valor));
+  const jSal=+cfg.joao||0;
+  const fut=ev.filter(e=>e.data>=HOJE), porVir=sum(fut.filter(e=>e.tipo==="gasto").map(e=>e.valor));
+  const sf=fut.filter(e=>e.auto&&e.pessoa==="Mariana"), nf=sf.length, mSal=sum(sf.map(e=>e.valor));
+  const passado=iso(y,m,dim)<HOJE;
+  const bal=v=>v>=0?`sobram <strong>${R(v)}</strong>`:`faltam <strong>${R(-v)}</strong>`;
+  const sex=ev.filter(e=>e.auto&&e.pessoa==="Mariana").length;
+  const bon=p=>sum(ev.filter(e=>e.tipo==="bonus"&&e.pessoa===p).map(e=>e.valor));
+  $("#sal").innerHTML=`
+  <article class="sal m"><h3>Mariana</h3><p class="sub">Salário semanal, paga as contas que ainda vêm no mesmo mês</p>
+    <label>Valor por semana<span class="mi"><b>R$</b><input type="number" step="0.01" min="0" id="cm" value="${cfg.mariana}"></span></label>
+    <p class="calc">${sex} ${sex===1?"sexta":"sextas"} neste mês: <strong>${R(sex*cfg.mariana)}</strong></p>
+    ${passado?`<p class="calc">Este mês já passou, sem contas por vir.</p>`:`<p class="calc">Contas por vir em ${MESES[m]}: <strong>${R(porVir)}</strong></p><p class="calc">${nf} ${nf===1?"sexta falta":"sextas faltam"} (${R(mSal)}), ${bal(mSal-porVir)}</p>`}
+    <p class="calc">Bonificações no mês: <strong>${R(bon("Mariana"))}</strong></p>
+    <div><button class="btn sm" data-bonus="Mariana">+ Bonificação</button></div></article>
+  <article class="sal j"><h3>João</h3><p class="sub">Salário mensal, paga as contas do mês que passou</p>
+    <div class="campos"><label style="flex:2">Valor por mês<span class="mi"><b>R$</b><input type="number" step="0.01" min="0" id="cj" value="${cfg.joao||""}" placeholder="0,00"></span></label>
+    <label style="flex:1">Dia<input type="number" min="1" max="31" id="dj" value="${cfg.diaJoao}"></label></div>
+    <p class="calc">Neste mês: <strong>${R(+cfg.joao||0)}</strong>, no dia ${Math.min(+cfg.diaJoao||5,dim)}</p>
+    ${jSal>0?`<p class="calc">Contas de ${nomeAnt} (${R(gAnt)}): ${bal(jSal-gAnt)}</p>`:`<p class="calc">Informe o salário para ver se cobre as contas de ${nomeAnt} (${R(gAnt)}).</p>`}
+    <p class="calc">Bonificações no mês: <strong>${R(bon("João"))}</strong></p>
+    <div><button class="btn sm" data-bonus="João">+ Bonificação</button></div></article>`;
+
+  const rot={gasto:"Gasto",venda:"Venda externa",entrada:"Entrada avulsa",bonus:"Bonificação",salario:"Salário"};
+  const lista=(sel?ev.filter(e=>e.data===sel):ev).sort((a,b)=>b.data.localeCompare(a.data));
+  $("#listaTit").textContent=sel?`Lançamentos de ${br(sel)}`:`Lançamentos de ${MESES[m]}`;
+  $("#todo").hidden=!sel;
+  $("#lista").innerHTML=lista.length?lista.map(e=>{
+    const neg=e.tipo==="gasto", rec=e.tipo==="venda"&&!e.recebida;
+    const meta=[br(e.data),e.pessoa,e.categoria,e.cartao?"cartão":"",e.auto?"automático":"",e.total>1?`parcela ${e.n}/${e.total}`:"",rot[e.tipo]].filter(Boolean).join(", ");
+    const val=e.tipo==="venda"?e.valor-e.custo:e.valor;
+    return `<div class="row"><div class="dot ${neg?"n":"p"}">${neg?"−":"+"}</div>
+      <div><strong>${esc(e.titulo)}</strong><small>${esc(meta)}</small>
+      ${e.tipo==="venda"?`<small>Vendido por ${R(e.valor)}, custo ${R(e.custo)}, lucro ${R(e.valor-e.custo)} (margem de ${e.valor?Math.round((e.valor-e.custo)/e.valor*100):0}%)</small>`:""}
+      ${rec?`<button class="btn sm" style="margin-top:6px" data-rec="${e.id}">Marcar como recebida</button>`:""}</div>
+      <div class="val ${neg?"n":"p"}">${neg?"−":"+"}${R(val)}${rec?"<small>a receber</small>":""}</div>
+      ${e.auto?"<span></span>":`<button class="x" data-del="${e.id}" aria-label="Excluir lançamento">×</button>`}</div>`;
+  }).join(""):`<p class="vazio">Nada por aqui ainda. Use os botões no topo para registrar o primeiro lançamento.</p>`;
+}
+
+/* ============ FORMULÁRIOS ============ */
+const F=(l,a)=>`<label>${l}<input ${a}></label>`;
+const FORMS={
+  gasto:()=>`<h2>Registrar gasto</h2>${F("O que foi?",'name="titulo" required maxlength="60" placeholder="Ex.: mercado da semana"')}<label><span id="lv">Valor</span><input name="valor" type="number" step="0.01" min="0.01" required inputmode="decimal"></label>${F("Data",`name="data" type="date" required value="${HOJE}"`)}<label>Categoria<select name="categoria">${CATS.map(c=>`<option>${c}</option>`).join("")}</select></label><label class="ck"><input type="checkbox" name="cartao">Foi no cartão de crédito</label><label class="ck"><input type="checkbox" name="rec">Gasto recorrente (parcelado)</label><div id="parc" hidden>${F("Número de parcelas (1 a 500)",'name="parcelas" id="np" type="number" min="1" max="500" step="1" inputmode="numeric" placeholder="Ex.: 12"')}<small class="sub">Cada parcela aparece sozinha nos meses seguintes, no mesmo dia.</small></div><p class="prev" id="prev" hidden></p>`,
+  venda:()=>`<h2>Registrar venda externa</h2>${F("O que foi vendido?",'name="titulo" required maxlength="60"')}${F("Custo da mercadoria",'name="custo" type="number" step="0.01" min="0" required inputmode="decimal"')}${F("Valor de venda",'name="valor" type="number" step="0.01" min="0.01" required inputmode="decimal"')}${F("Data prevista de recebimento",`name="data" type="date" required value="${HOJE}"`)}<p class="prev" id="prev">Preencha custo e venda para ver o lucro.</p>`,
+  entrada:()=>`<h2>Entrada avulsa</h2>${F("De onde veio?",'name="titulo" required maxlength="60" placeholder="Ex.: presente, reembolso"')}${F("Valor",'name="valor" type="number" step="0.01" min="0.01" required inputmode="decimal"')}${F("Data",`name="data" type="date" required value="${HOJE}"`)}`,
+  bonus:p=>`<h2>Nova bonificação</h2><label>Para quem<select name="pessoa"><option${p==="Mariana"?" selected":""}>Mariana</option><option${p==="João"?" selected":""}>João</option></select></label>${F("Descrição",'name="titulo" maxlength="60" placeholder="Bonificação"')}${F("Valor",'name="valor" type="number" step="0.01" min="0.01" required inputmode="decimal"')}${F("Data",`name="data" type="date" required value="${HOJE}"`)}`
+};
+const LABEL={gasto:"Gasto",venda:"Venda",entrada:"Entrada",bonus:"Bonificação"};
+let tipo="";
+function abrir(t,p){
+  tipo=t;
+  $("#f").innerHTML=FORMS[t](p)+`<div class="fim"><button type="button" class="btn sm" data-fechar>Cancelar</button><button class="btn sm mint">Salvar</button></div>`;
+  $("#dlg").showModal();
+}
+$("#f").addEventListener("keydown",e=>{ if(e.target.id==="np"&&/^[.,eE+-]$/.test(e.key)) e.preventDefault(); });
+$("#f").addEventListener("input",e=>{
+  const f=$("#f");
+  if(e.target.name==="rec"){ const on=e.target.checked; $("#parc").hidden=!on; $("#np").required=on; $("#lv").textContent=on?"Valor de cada parcela":"Valor"; }
+  if(e.target.id==="np"&&e.target.value!==""){ const n=Math.min(500,Math.max(1,Math.floor(+e.target.value))); if(n!==+e.target.value) e.target.value=n; }
+  const p=$("#prev"); if(!p) return;
+  const v=+f.valor.value;
+  if(tipo==="venda"){
+    if(!v) return;
+    const l=v-(+f.custo.value);
+    p.textContent=l>=0?`Lucro de ${R(l)}, margem de ${Math.round(l/v*100)}% sobre a venda.`:`Prejuízo de ${R(-l)} nesta venda.`;
+  } else if(tipo==="gasto"){
+    const n=+f.parcelas.value;
+    if(f.rec.checked&&n&&v){
+      const b=f.data.value||HOJE, d=new Date(+b.slice(0,4),+b.slice(5,7)-1+n-1,1);
+      p.hidden=false; p.textContent=`${n} ${n===1?"parcela":"parcelas"} de ${R(v)}, total de ${R(n*v)}. Última em ${MESES[d.getMonth()]} de ${d.getFullYear()}.`;
+    } else p.hidden=true;
+  }
+});
+$("#f").addEventListener("submit",e=>{
+  e.preventDefault();
+  const f=Object.fromEntries(new FormData(e.target));
+  const it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),tipo,titulo:(f.titulo||"").trim()||"Bonificação",valor:+f.valor,data:f.data};
+  if(tipo==="venda"){it.custo=+f.custo;it.recebida=false;}
+  if(tipo==="gasto"){
+    it.categoria=f.categoria; it.cartao=!!f.cartao;
+    if(f.rec){ const n=+f.parcelas; if(!Number.isInteger(n)||n<1||n>500){ toast("Parcelas: use um número inteiro de 1 a 500"); return; } it.parcelas=n; }
+  }
+  if(tipo==="bonus")it.pessoa=f.pessoa;
+  view={y:+f.data.slice(0,4),m:+f.data.slice(5,7)-1}; sel=null;
+  put(it); $("#dlg").close(); toast(LABEL[tipo]+" salvo!");
+  const pig=$("#pig"); pig.classList.remove("hop"); void pig.getBoundingClientRect(); pig.classList.add("hop");
+  setTimeout(()=>pig.classList.remove("hop"),700);
+});
+let tt;
+function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.remove("on"); void el.offsetWidth; el.classList.add("on"); }
+
+/* ============ EVENTOS ============ */
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-abrir],[data-bonus],[data-del],[data-rec],[data-k],[data-nav],[data-all],[data-fechar],[data-pk],[data-user],[data-trocar],[data-sair]"); if(!b) return;
+  const d=b.dataset;
+  if(d.abrir) abrir(d.abrir);
+  else if(d.bonus) abrir("bonus",d.bonus);
+  else if(d.del){ const it=items.find(i=>i.id===d.del); if(confirm(it&&it.parcelas>1?"Excluir este gasto e todas as parcelas?":"Excluir este lançamento?")) del(d.del); }
+  else if(d.rec){ const it=items.find(i=>i.id===d.rec); if(it){ put({...it,recebida:true}); toast("Venda recebida!"); } }
+  else if(d.k){ sel=sel===d.k?null:d.k; render(); }
+  else if(d.nav){ let m=view.m+ +d.nav,y=view.y; if(m<0){m=11;y--;} if(m>11){m=0;y++;} view={y,m}; sel=null; render(); }
+  else if("all" in d){ sel=null; render(); }
+  else if("fechar" in d) $("#dlg").close();
+  else if(d.pk) tecla(d.pk);
+  else if(d.user) escolher(d.user);
+  else if("trocar" in d){ if(!busy) escolher(null); }
+  else if("sair" in d && A) A.out();
+});
+$("#sal").addEventListener("change",e=>{
+  const v=Math.max(0,+e.target.value||0);
+  if(e.target.id==="cm") setCfg({mariana:v});
+  if(e.target.id==="cj") setCfg({joao:v});
+  if(e.target.id==="dj") setCfg({diaJoao:Math.min(31,Math.max(1,Math.round(v)||5))});
+});
+
+
+/* ============ LOGIN POR PIN ============
+   Os PINs NÃO ficam neste arquivo: quem confere é o Firebase Authentication.
+   O Firebase exige senha de 6+ caracteres, então o PIN vai com um prefixo fixo. */
+const SENHA = p => "cofrinho-"+p;
+const USERS = {
+  joao:{nome:"João",email:"joao@cofrinho.local",cor:"#ffd9c2",extra:'<path d="M19 32Q20 8 40 8Q60 8 61 32Q40 18 19 32Z" fill="#2d2347"/>'},
+  mari:{nome:"Mari",email:"mari@cofrinho.local",cor:"#c6f0dc",extra:'<path d="M40 9 26 2v14zM40 9 54 2v14z" fill="#e8456c" stroke="#2d2347" stroke-width="2.5" stroke-linejoin="round"/>'}
+};
+const AV = u => `<svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="36" fill="${u.cor}" stroke="#2d2347" stroke-width="3"/>${u.extra}<circle cx="29" cy="40" r="4" fill="#2d2347"/><circle cx="51" cy="40" r="4" fill="#2d2347"/><ellipse cx="22" cy="50" rx="6" ry="4" fill="#e8456c" opacity=".35"/><ellipse cx="58" cy="50" rx="6" ry="4" fill="#e8456c" opacity=".35"/><path d="M32 52q8 9 16 0" fill="none" stroke="#2d2347" stroke-width="3" stroke-linecap="round"/></svg>`;
+let uSel=null, pin="", busy=false, lockT=0;
+const LK="cofrinho:lock";
+const lock=()=>{ try{ return JSON.parse(localStorage.getItem(LK)||"{}"); }catch(e){ return {}; } };
+const saveLock=o=>{ try{ localStorage.setItem(LK,JSON.stringify(o)); }catch(e){} };
+const reset=()=>{ clearTimeout(idle); if(A&&A.auth.currentUser) idle=setTimeout(()=>A.out(),6e5); };
+["pointerdown","keydown","scroll"].forEach(v=>addEventListener(v,reset,{passive:true}));
+
+function msg(t,erro){ const m=$("#lmsg"); m.textContent=t; m.className=erro?"erro":""; }
+function dots(){ $("#dots").innerHTML=[0,1,2,3].map(i=>`<i class="${i<pin.length?"on":""}"></i>`).join(""); }
+function travaPad(d){ $$("#pad .k").forEach(b=>b.disabled=d); }
+function mostrarLogin(){ document.body.classList.add("travado"); $("#login").hidden=false; escolher(null); }
+function mostrarApp(){ document.body.classList.remove("travado"); $("#login").hidden=true; uSel=null; pin=""; render(); }
+function escolher(u){
+  clearInterval(lockT); uSel=u; pin=""; busy=false; msg("");
+  $("#u1").hidden=!!u; $("#u2").hidden=!u;
+  if(u){ $("#av").innerHTML=AV(USERS[u]); $("#oi").textContent=`Oi, ${USERS[u].nome}!`; dots(); checarLock(); }
+}
+function checarLock(){
+  clearInterval(lockT);
+  const ate=((lock()[uSel]||{}).ate)||0;
+  if(Date.now()>=ate){ travaPad(false); return; }
+  travaPad(true);
+  const t=()=>{ const s=Math.ceil((ate-Date.now())/1000);
+    if(s<=0){ clearInterval(lockT); msg(""); travaPad(false); return; }
+    msg(`Muitas tentativas. Tente de novo em ${s>90?Math.ceil(s/60)+" min":s+" s"}.`,1); };
+  t(); lockT=setInterval(t,1000);
+}
+/* bloqueio progressivo: 3 erros = 30 s, 4 = 1 min, 5 = 5 min, 6+ = 15 min, 8+ = 1 h */
+function falha(u){
+  const L=lock(), x=L[u]||{n:0}; x.n++;
+  const sg=x.n>=8?3600:x.n>=6?900:x.n===5?300:x.n===4?60:x.n===3?30:0;
+  x.ate=sg?Date.now()+sg*1000:0; L[u]=x; saveLock(L); return x.n;
+}
+function tecla(k){
+  if(busy||!uSel||$("#pad .k").disabled) return;
+  if(k==="b") pin=pin.slice(0,-1); else if(k==="c") pin=""; else if(pin.length<4) pin+=k;
+  dots(); if(pin.length===4) entrar();
+}
+async function entrar(){
+  busy=true; travaPad(true); msg("Conferindo…");
+  const u=uSel, p=pin;
+  try{
+    if(!A) throw {code:"preview"};
+    await new Promise(r=>setTimeout(r,500));
+    await A.signIn(A.auth,USERS[u].email,SENHA(p));
+    const L=lock(); delete L[u]; saveLock(L); msg("");
+  }catch(e){
+    pin=""; dots();
+    const d=$("#dots"); d.classList.remove("tremer"); void d.offsetWidth; d.classList.add("tremer");
+    if(e.code==="preview") msg("Pré-visualização: configure o Firebase para ativar o login.",1);
+    else if(e.code==="auth/too-many-requests") msg("Muitas tentativas. Aguarde alguns minutos e tente de novo.",1);
+    else if(e.code==="auth/network-request-failed") msg("Sem conexão. Verifique a internet.",1);
+    else { const n=falha(u); msg(n<3?`PIN incorreto. Restam ${3-n} ${3-n===1?"tentativa":"tentativas"} antes de um bloqueio.`:"PIN incorreto.",1); }
+  }
+  busy=false; if(uSel) checarLock();
+}
+document.addEventListener("keydown",e=>{
+  if($("#login").hidden||!uSel) return;
+  if(/^\d$/.test(e.key)) tecla(e.key); else if(e.key==="Backspace") tecla("b");
+});
+$("#pad").innerHTML=["1","2","3","4","5","6","7","8","9","c","0","b"].map(k=>`<button class="btn k" data-pk="${k}" aria-label="${k==="c"?"Limpar":k==="b"?"Apagar":k}">${k==="c"?"✕":k==="b"?"⌫":k}</button>`).join("");
+$("#quem").innerHTML=Object.entries(USERS).map(([id,u])=>`<button class="q" data-user="${id}" style="background:${u.cor}">${AV(u)}${u.nome}</button>`).join("");
+
+render(); boot();
+</script>
+</body>
+</html>
