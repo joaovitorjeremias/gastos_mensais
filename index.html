@@ -163,7 +163,6 @@ body.travado .nav-bar{display:none}
 .f3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .pin{text-align:center;letter-spacing:.2em;font-size:1.05rem}
 #av{font-size:4rem;line-height:1.1}
-#esq{display:grid;gap:10px;width:100%}
 </style>
 </head>
 <body>
@@ -261,11 +260,6 @@ body.travado .nav-bar{display:none}
       <p class="sub">Cada pessoa troca o próprio PIN, estando logada na própria conta.</p>
       <div class="sec">Trocar meu PIN</div><div id="pfMeu"></div>
       <div class="sec">Senha de fechamento do mês</div><div id="pfFechar"></div>
-      <div class="sec">E-mail de recuperação 📧</div>
-      <p class="sub" id="recStatus" style="margin-bottom:8px"></p>
-      <form id="recf"><input name="email" type="email" required placeholder="seuemail@exemplo.com" autocomplete="email" aria-label="E-mail de recuperação">
-        <input class="pin" name="pin" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required placeholder="Seu PIN atual" autocomplete="off" aria-label="Seu PIN atual">
-        <button class="btn sm butter">Cadastrar e-mail</button></form>
     </div>
     <div class="card"><h2 class="t">Minha conta 🐷</h2>
       <p id="quem2" style="margin-bottom:10px"></p>
@@ -291,11 +285,6 @@ body.travado .nav-bar{display:none}
       <div id="av"></div><h2 id="oi"></h2><p>Digite seu PIN de 6 números</p>
       <div class="dots" id="dots" role="img" aria-label="PIN digitado"></div>
       <div class="pad" id="pad"></div>
-      <button type="button" class="btn sm" data-esqueci>Esqueci meu PIN</button>
-      <div id="esq" hidden>
-        <input id="esqEmail" type="email" placeholder="Seu e-mail de recuperação" autocomplete="email" aria-label="E-mail de recuperação">
-        <div class="btns" style="justify-content:center"><button type="button" class="btn sm mint" data-usaemail>Entrar com este e-mail</button><button type="button" class="btn sm butter" data-reset>Enviar link de recuperação</button></div>
-      </div>
     </div>
     <p id="lmsg" role="status" aria-live="polite"></p>
   </div>
@@ -379,11 +368,6 @@ async function boot(){
       del:(c,id)=>fs.deleteDoc(fs.doc(fdb,c,id)),
       lote:ops=>{ const b=fs.writeBatch(fdb); ops.forEach(([c,id,d])=>b.set(fs.doc(fdb,c,id),d,{merge:true})); return b.commit(); }
     };
-    const qs=new URLSearchParams(location.search);
-    if(qs.get("mode")==="resetPassword"&&qs.get("oobCode")){
-      try{ await au.verifyPasswordResetCode(auth,qs.get("oobCode")); rst={code:qs.get("oobCode"),fase:1,p1:""}; telaReset(); }
-      catch(e){ msg("Esse link expirou. Peça um novo em “Esqueci meu PIN”.",1); }
-    }
     const ouvir=(c,fn)=>fs.onSnapshot(fs.collection(fdb,c),fn,()=>{$("#status").textContent="Sem permissão para ler os dados";});
     au.onAuthStateChanged(auth,u=>{
       off.forEach(f=>f()); off=[]; pronto.p=pronto.c=false;
@@ -555,7 +539,7 @@ async function fechar(dia){
 
 /* ============ EVENTOS ============ */
 document.addEventListener("click",e=>{
-  const b=e.target.closest("[data-abrir],[data-finalizar],[data-cancel],[data-del],[data-k],[data-nav],[data-tab],[data-fk],[data-pk],[data-user],[data-trocar],[data-sair],[data-arq],[data-emo],[data-bkj],[data-bkc],[data-esqueci],[data-usaemail],[data-reset]"); if(!b) return;
+  const b=e.target.closest("[data-abrir],[data-finalizar],[data-cancel],[data-del],[data-k],[data-nav],[data-tab],[data-fk],[data-pk],[data-user],[data-trocar],[data-sair],[data-arq],[data-emo],[data-bkj],[data-bkc]"); if(!b) return;
   const d=b.dataset;
   if(d.abrir) abrirMov(d.abrir);
   else if("finalizar" in d) abrirFechar();
@@ -573,9 +557,6 @@ document.addEventListener("click",e=>{
   else if(d.emo) b.closest(".catf").querySelector(".emi").value=d.emo;
   else if("bkj" in d) backupJson();
   else if("bkc" in d) backupCsv();
-  else if("esqueci" in d) $("#esq").hidden=!$("#esq").hidden;
-  else if("usaemail" in d){ const em=$("#esqEmail").value.trim().toLowerCase(); if(em&&uSel){ try{ localStorage.setItem("cofrinho:email:"+uSel,em); }catch(x){} $("#esq").hidden=true; msg("Pronto! Agora digite seu PIN."); } }
-  else if("reset" in d) enviarReset();
 });
 $("#dlg").addEventListener("close",()=>{ modo=""; fpin=""; });
 document.addEventListener("keydown",e=>{
@@ -608,8 +589,6 @@ function travaPad(d){ $$("#pad .k").forEach(b=>b.disabled=d); }
 function mostrarLogin(){ document.body.classList.add("travado"); $("#login").hidden=false; escolher(null); }
 function mostrarApp(){ document.body.classList.remove("travado"); $("#login").hidden=true; uSel=null; pin=""; render(); }
 function escolher(u){
-  if(rst&&!u){ telaReset(); return; }
-  $$("#u2 [data-trocar],#u2 [data-esqueci]").forEach(b=>b.hidden=false); $("#esq").hidden=true;
   clearInterval(lockT); uSel=u; pin=""; busy=false; msg("");
   $("#u1").hidden=!!u; $("#u2").hidden=!u;
   if(u){ $("#av").innerHTML=AV(USERS[u]); $("#oi").textContent=`Oi, ${USERS[u].nome}!`; dots(); checarLock(); }
@@ -633,7 +612,7 @@ function falha(u){
 function tecla(k){
   if(busy||!uSel||$("#pad .k").disabled) return;
   if(k==="b") pin=pin.slice(0,-1); else if(k==="c") pin=""; else if(pin.length<6) pin+=k;
-  dots(); if(pin.length===6) (rst?resetar:entrar)();
+  dots(); if(pin.length===6) entrar();
 }
 async function entrar(){
   busy=true; travaPad(true); msg("Conferindo…");
@@ -649,7 +628,11 @@ async function entrar(){
     if(e.code==="preview") msg("Pré-visualização: configure o Firebase para ativar o login.",1);
     else if(e.code==="auth/too-many-requests") msg("Muitas tentativas. Aguarde alguns minutos e tente de novo.",1);
     else if(e.code==="auth/network-request-failed") msg("Sem conexão. Verifique a internet.",1);
-    else { const n=falha(u); msg(n<3?`PIN incorreto. Restam ${3-n} ${3-n===1?"tentativa":"tentativas"} antes de um bloqueio.`:"PIN incorreto.",1); }
+    else if(!["auth/invalid-credential","auth/wrong-password","auth/user-not-found","auth/invalid-email"].includes(e.code)){
+      /* erro que não é PIN errado (configuração, domínio, chave...): mostra o código e não conta como tentativa */
+      console.error(e); msg(`Não consegui entrar. Código: ${e.code||e.message||"desconhecido"}`,1);
+    }
+    else { const n=falha(u); msg((n<3?`PIN incorreto. Restam ${3-n} ${3-n===1?"tentativa":"tentativas"} antes de um bloqueio.`:"PIN incorreto.")+` (${e.code})`,1); }
   }
   busy=false; if(uSel) checarLock();
 }
@@ -678,8 +661,6 @@ function rAj(){
   $("#perL").innerHTML=S.periodos.slice().reverse().map(p=>`<div class="row"><div class="dot ${p.status==="aberto"?"p":"n"}">${p.numero}</div><div><strong>Período ${p.numero}</strong><small>${br(p.inicio)} até ${p.fim?br(p.fim):"hoje"}${p.status==="aberto"?", aberto":", fechado por "+esc(p.fechadoPor||"?")}</small></div><div class="val ${p.resumo&&p.resumo.saldo<0?"n":"p"}">${p.resumo?R(p.resumo.saldo):"em andamento"}</div><span></span></div>`).join("")||`<p class="vazio">Nenhum período ainda.</p>`;
   const el=$("#lim"); if(document.activeElement!==el) el.value=S.cfg.limite||"";
   $("#quem2").textContent=nomeAtual()?`Você está como ${nomeAtual()}`:"";
-  const cu=A&&A.auth.currentUser, loc=/@cofrinho\.local$/; let pend=null; try{ pend=localStorage.getItem("cofrinho:email:"+quem()); }catch(e){}
-  $("#recStatus").textContent=cu&&cu.email&&!loc.test(cu.email)?`E-mail cadastrado: ${cu.email} ✅`:pend&&!loc.test(pend)?`Falta você abrir o link enviado para ${pend} 💌`:"Nenhum e-mail cadastrado ainda.";
 }
 function baixar(nome,tipo,txt){ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([txt],{type:tipo})); a.download=nome; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
 function backupJson(){ baixar(`cofrinho-backup-${HOJE}.json`,"application/json",JSON.stringify({exportadoEm:new Date().toISOString(),entradas:S.entrada,saidas:S.saida,periodos:S.periodos,categorias:S.categorias,config:S.cfg},null,2)); toast("Backup baixado!"); }
@@ -709,21 +690,12 @@ $("#v-aj").addEventListener("change",e=>{
 $("#catFE").innerHTML=catForm("entrada"); $("#catFS").innerHTML=catForm("saida");
 try{ $("#idl").value=localStorage.getItem("cofrinho:idle")||"10"; }catch(e){}
 
-/* ============ SEGURANÇA: trocar PIN, e-mail de recuperação e recuperação de acesso ============ */
-let rst=null;
+/* ============ SEGURANÇA: trocar PIN ============ */
 const quem = () => Object.keys(USERS).find(k=>USERS[k].nome===nomeAtual())||"";
-const emailsDe = u => { let c=null; try{ c=localStorage.getItem("cofrinho:email:"+u); }catch(e){} return [...new Set([c,USERS[u].email].filter(Boolean))]; };
 async function entrarCom(u,p){
-  let err;
-  for(const em of emailsDe(u)){
-    try{
-      await A.signIn(A.auth,em,SENHA(p));
-      const cu=A.auth.currentUser; try{ localStorage.setItem("cofrinho:email:"+u,cu.email); }catch(x){}
-      if(!cu.displayName) await A.au.updateProfile(cu,{displayName:USERS[u].nome});
-      return;
-    }catch(e){ err=e; if(!["auth/invalid-credential","auth/wrong-password","auth/user-not-found","auth/invalid-email"].includes(e.code)) throw e; }
-  }
-  throw err;
+  await A.signIn(A.auth,USERS[u].email,SENHA(p));
+  const cu=A.auth.currentUser;
+  if(!cu.displayName) await A.au.updateProfile(cu,{displayName:USERS[u].nome});
 }
 const fraco = p => /^(\d)\1{5}$/.test(p)||"0123456789".includes(p)||"9876543210".includes(p);
 const errAuth = e => ["auth/invalid-credential","auth/wrong-password"].includes(e.code)?"PIN atual incorreto.":e.code==="auth/too-many-requests"?"Muitas tentativas. Aguarde um pouco.":e.code==="auth/network-request-failed"?"Sem conexão.":e.code==="auth/email-already-in-use"?"Esse e-mail já está em uso.":e.code==="auth/invalid-email"?"E-mail inválido.":"Não consegui. Tente de novo.";
@@ -742,42 +714,8 @@ document.addEventListener("submit",async e=>{
     if(novo===atual) return toast("O novo PIN precisa ser diferente");
     if(fraco(novo)) return toast("Escolha um PIN menos óbvio");
     try{ await trocarPin(f.dataset.kind,atual,novo); f.reset(); toast("PIN trocado! 🎉"); hop(); }catch(x){ toast(errAuth(x)); }
-  } else if(f.id==="recf"){
-    e.preventDefault(); if(!A||!A.auth.currentUser||!db) return;
-    const email=f.email.value.trim().toLowerCase(), u=A.auth.currentUser, q=quem();
-    try{
-      await A.au.reauthenticateWithCredential(u,A.au.EmailAuthProvider.credential(u.email,SENHA(f.pin.value)));
-      await db.lote([["config","ajustes",{permitidos:[...new Set([...(S.cfg.permitidos||[]),email])]}]]);
-      await A.au.updateProfile(u,{displayName:nomeAtual()});
-      await A.au.verifyBeforeUpdateEmail(u,email);
-      try{ localStorage.setItem("cofrinho:email:"+q,email); }catch(x){}
-      f.reset(); rAj(); toast("Enviei um link de confirmação. Olhe o spam também! 💌");
-    }catch(x){ toast(errAuth(x)); }
   }
 });
-function telaReset(){
-  uSel="reset"; pin=""; busy=false; clearInterval(lockT); travaPad(false); dots();
-  $("#u1").hidden=true; $("#u2").hidden=false; $("#av").textContent="🔑";
-  $("#oi").textContent=rst.fase===1?"Criar novo PIN":"Repita o novo PIN";
-  $$("#u2 [data-trocar],#u2 [data-esqueci]").forEach(b=>b.hidden=true); $("#esq").hidden=true;
-}
-async function resetar(){
-  if(rst.fase===1){
-    if(fraco(pin)){ pin=""; dots(); msg("Escolha um PIN menos óbvio.",1); return; }
-    rst.p1=pin; rst.fase=2; pin=""; dots(); $("#oi").textContent="Repita o novo PIN"; msg(""); return;
-  }
-  if(pin!==rst.p1){ rst.fase=1; rst.p1=""; pin=""; dots(); $("#oi").textContent="Criar novo PIN"; msg("Os PINs não são iguais. Vamos de novo.",1); return; }
-  busy=true; travaPad(true);
-  try{ await A.au.confirmPasswordReset(A.auth,rst.code,SENHA(pin)); rst=null; history.replaceState(null,"",location.pathname); escolher(null); msg("PIN novo salvo! Agora é só entrar 🎉"); }
-  catch(e){ pin=""; dots(); msg("Não deu certo, o link pode ter expirado. Peça outro.",1); }
-  busy=false; if(rst) travaPad(false);
-}
-async function enviarReset(){
-  const em=$("#esqEmail").value.trim().toLowerCase();
-  if(!A||!em) return msg("Digite seu e-mail de recuperação.",1);
-  try{ await A.au.sendPasswordResetEmail(A.auth,em); }catch(e){ if(e.code==="auth/too-many-requests") return msg("Muitas tentativas. Aguarde um pouco.",1); }
-  msg("Se esse e-mail estiver cadastrado, o link chega em instantes. Olhe o spam também! 💌");
-}
 $("#pfMeu").innerHTML=pinForm("meu"); $("#pfFechar").innerHTML=pinForm("fechar");
 render(); boot();
 </script>
