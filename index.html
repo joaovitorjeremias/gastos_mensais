@@ -101,7 +101,7 @@ body.travado main{display:none}
 .q:nth-child(2) svg{animation-delay:-1.5s}
 #av svg{width:100px;height:100px;animation:pulo .6s cubic-bezier(.3,1.6,.5,1)}
 @keyframes pulo{from{transform:scale(.3) translateY(30px)}}
-.dots{display:flex;gap:14px;justify-content:center;height:24px;align-items:center}
+.dots{display:flex;gap:11px;justify-content:center;height:24px;align-items:center}
 .dots i{width:20px;height:20px;border-radius:50%;border:2px solid var(--ink);background:#fff;transition:transform .25s cubic-bezier(.34,1.56,.64,1),background .2s}
 .dots i.on{background:var(--rose);transform:scale(1.25)}
 .dots.tremer{animation:tremer .45s}
@@ -264,7 +264,7 @@ body.travado .nav-bar{display:none}
       <div class="sec">E-mail de recuperação 📧</div>
       <p class="sub" id="recStatus" style="margin-bottom:8px"></p>
       <form id="recf"><input name="email" type="email" required placeholder="seuemail@exemplo.com" autocomplete="email" aria-label="E-mail de recuperação">
-        <input class="pin" name="pin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" required placeholder="Seu PIN atual" autocomplete="off" aria-label="Seu PIN atual">
+        <input class="pin" name="pin" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required placeholder="Seu PIN atual" autocomplete="off" aria-label="Seu PIN atual">
         <button class="btn sm butter">Cadastrar e-mail</button></form>
     </div>
     <div class="card"><h2 class="t">Minha conta 🐷</h2>
@@ -288,7 +288,7 @@ body.travado .nav-bar{display:none}
     <div id="u1" class="lstep"><p>Quem vai entrar hoje?</p><div class="quem" id="quem"></div></div>
     <div id="u2" class="lstep" hidden>
       <button class="btn sm" data-trocar>‹ Trocar de pessoa</button>
-      <div id="av"></div><h2 id="oi"></h2><p>Digite seu PIN de 4 números</p>
+      <div id="av"></div><h2 id="oi"></h2><p>Digite seu PIN de 6 números</p>
       <div class="dots" id="dots" role="img" aria-label="PIN digitado"></div>
       <div class="pad" id="pad"></div>
       <button type="button" class="btn sm" data-esqueci>Esqueci meu PIN</button>
@@ -510,7 +510,7 @@ $("#f").addEventListener("submit",e=>{
 
 /* ============ FINALIZAR MÊS (período) ============ */
 const TEC = a => ["1","2","3","4","5","6","7","8","9","c","0","b"].map(k=>`<button type="button" class="btn k" ${a}="${k}" aria-label="${k==="c"?"Limpar":k==="b"?"Apagar":k}">${k==="c"?"✕":k==="b"?"⌫":k}</button>`).join("");
-const fdots = () => { $("#fdots").innerHTML=[0,1,2,3].map(i=>`<i class="${i<fpin.length?"on":""}"></i>`).join(""); };
+const fdots = () => { $("#fdots").innerHTML=[0,1,2,3,4,5].map(i=>`<i class="${i<fpin.length?"on":""}"></i>`).join(""); };
 const fmsg = (t,e) => { const m=$("#fmsg"); m.textContent=t; m.className=e?"erro":""; };
 function abrirFechar(){
   const ab=aberto(); if(!ab||!db){ toast("Aguarde, ainda estou carregando"); return; }
@@ -524,8 +524,8 @@ function abrirFechar(){
 }
 async function digitaF(k){
   if(fbusy||modo!=="fechar") return;
-  if(k==="b") fpin=fpin.slice(0,-1); else if(k==="c") fpin=""; else if(fpin.length<4) fpin+=k;
-  fdots(); if(fpin.length<4) return;
+  if(k==="b") fpin=fpin.slice(0,-1); else if(k==="c") fpin=""; else if(fpin.length<6) fpin+=k;
+  fdots(); if(fpin.length<6) return;
   const dia=$("#fdia").value, ab=aberto();
   if(!dia||dia<ab.inicio){ fpin=""; fdots(); fmsg("Escolha uma data válida.",1); return; }
   fbusy=true; $$("#fpad .k").forEach(b=>b.disabled=true); fmsg("Conferindo…");
@@ -588,8 +588,8 @@ $("#resSel").addEventListener("change",e=>{ resSel=e.target.value; rRes(); });
 
 /* ============ LOGIN POR PIN ============
    Os PINs NÃO ficam neste arquivo: quem confere é o Firebase Authentication.
-   O Firebase exige senha de 6+ caracteres, então o PIN vai com um prefixo fixo. */
-const SENHA = p => "cofrinho-"+p;
+   O Firebase exige senha de 6+ caracteres, então o PIN tem 6 dígitos e vai direto como senha. */
+const SENHA = p => p;
 const USERS = {
   joao:{nome:"João",email:"joao@cofrinho.local",cor:"#ffd9c2",extra:'<path d="M19 32Q20 8 40 8Q60 8 61 32Q40 18 19 32Z" fill="#2d2347"/>'},
   mari:{nome:"Mari",email:"mari@cofrinho.local",cor:"#c6f0dc",extra:'<path d="M40 9 26 2v14zM40 9 54 2v14z" fill="#e8456c" stroke="#2d2347" stroke-width="2.5" stroke-linejoin="round"/>'}
@@ -603,7 +603,7 @@ const reset=()=>{ clearTimeout(idle); if(A&&A.auth.currentUser) idle=setTimeout(
 ["pointerdown","keydown","scroll"].forEach(v=>addEventListener(v,reset,{passive:true}));
 
 function msg(t,erro){ const m=$("#lmsg"); m.textContent=t; m.className=erro?"erro":""; }
-function dots(){ $("#dots").innerHTML=[0,1,2,3].map(i=>`<i class="${i<pin.length?"on":""}"></i>`).join(""); }
+function dots(){ $("#dots").innerHTML=[0,1,2,3,4,5].map(i=>`<i class="${i<pin.length?"on":""}"></i>`).join(""); }
 function travaPad(d){ $$("#pad .k").forEach(b=>b.disabled=d); }
 function mostrarLogin(){ document.body.classList.add("travado"); $("#login").hidden=false; escolher(null); }
 function mostrarApp(){ document.body.classList.remove("travado"); $("#login").hidden=true; uSel=null; pin=""; render(); }
@@ -632,8 +632,8 @@ function falha(u){
 }
 function tecla(k){
   if(busy||!uSel||$("#pad .k").disabled) return;
-  if(k==="b") pin=pin.slice(0,-1); else if(k==="c") pin=""; else if(pin.length<4) pin+=k;
-  dots(); if(pin.length===4) (rst?resetar:entrar)();
+  if(k==="b") pin=pin.slice(0,-1); else if(k==="c") pin=""; else if(pin.length<6) pin+=k;
+  dots(); if(pin.length===6) (rst?resetar:entrar)();
 }
 async function entrar(){
   busy=true; travaPad(true); msg("Conferindo…");
@@ -725,9 +725,9 @@ async function entrarCom(u,p){
   }
   throw err;
 }
-const fraco = p => /^(\d)\1{3}$/.test(p)||"0123456789".includes(p)||"9876543210".includes(p);
+const fraco = p => /^(\d)\1{5}$/.test(p)||"0123456789".includes(p)||"9876543210".includes(p);
 const errAuth = e => ["auth/invalid-credential","auth/wrong-password"].includes(e.code)?"PIN atual incorreto.":e.code==="auth/too-many-requests"?"Muitas tentativas. Aguarde um pouco.":e.code==="auth/network-request-failed"?"Sem conexão.":e.code==="auth/email-already-in-use"?"Esse e-mail já está em uso.":e.code==="auth/invalid-email"?"E-mail inválido.":"Não consegui. Tente de novo.";
-const pinForm = k => `<form class="pinf" data-kind="${k}"><div class="f3">${["PIN atual","Novo PIN","Repetir novo PIN"].map((l,i)=>`<input class="pin" name="${["atual","novo","repita"][i]}" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" required placeholder="${l}" autocomplete="off" aria-label="${l}">`).join("")}</div><button class="btn sm mint">${k==="meu"?"Trocar meu PIN":"Trocar senha de fechamento"}</button></form>`;
+const pinForm = k => `<form class="pinf" data-kind="${k}"><div class="f3">${["PIN atual","Novo PIN","Repetir novo PIN"].map((l,i)=>`<input class="pin" name="${["atual","novo","repita"][i]}" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required placeholder="${l}" autocomplete="off" aria-label="${l}">`).join("")}</div><button class="btn sm mint">${k==="meu"?"Trocar meu PIN":"Trocar senha de fechamento"}</button></form>`;
 async function trocarPin(k,atual,novo){
   const {auth,auth2,au}=A;
   if(k==="meu"){ const u=auth.currentUser; await au.reauthenticateWithCredential(u,au.EmailAuthProvider.credential(u.email,SENHA(atual))); await au.updatePassword(u,SENHA(novo)); }
